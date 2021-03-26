@@ -1,5 +1,6 @@
 # BEGIN my add
 #-----------------------
+local.py
 # Vim temp files
 *.un~
 
