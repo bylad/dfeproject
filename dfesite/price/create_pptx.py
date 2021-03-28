@@ -90,7 +90,13 @@ def new_pptx(news_title, current_price_list, previous_price_list):
                 pptx_table(shape.table, current_price_list, previous_price_list, 17, 25)
 
     stat_filename = f'Stat_price_{date4filename}.pptx'
-    prs_full_path = os.path.join(MEDIA, 'price', f'{news_date.year}', stat_filename)
+    path_year = os.path.join(MEDIA, 'price', f'{news_date.year}')
+    if os.path.isfile(path_year):
+        os.mkdir(path_year)
+        prs_full_path = os.path.join(path_year, stat_filename)
+    else:
+        os.mkdir(path_year)
+        prs_full_path = os.path.join(path_year, stat_filename)
     print(prs_full_path)
     # if os.path.exists(prs_full_path):
     #     print('Файл с таким именем существует')
