@@ -100,7 +100,7 @@ def new_pptx(production_list, idx, news_title):
 
     stat_filename = f'Stat_industry_{date4filename}.pptx'
     path_year = os.path.join(MEDIA, 'industry', f'{date_list[0]}')
-    if os.path.isfile(path_year):
+    if os.path.exists(path_year):
         prs_full_path = os.path.join(path_year, stat_filename)
     else:
         os.mkdir(path_year)
