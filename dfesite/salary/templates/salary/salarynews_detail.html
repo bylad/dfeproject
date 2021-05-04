@@ -65,7 +65,7 @@
             </thead>
 
             <tbody>
-            {% for zp in salarydetail_list reversed%}
+            {% for zp in salarydetail_list %}
                 <tr style="text-align:right">
                 {% if forloop.counter == 1 %}
                     <td style="text-align:left"><strong>{{ zp.employer }}</strong></td>

@@ -58,7 +58,7 @@
                 </tr>
             </thead>
             <tbody>
-            {% for ix in price_list %}
+            {% for ix in price_list reversed %}
                 <tr>
                 {% if ix.product != '' %}
                     {% if 'Услуги по снабжению' in ix.product %}

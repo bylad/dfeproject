@@ -1,8 +1,10 @@
 import os
+import re
 # from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.generic import TemplateView, ListView, DetailView
 from django.contrib.auth.decorators import login_required
+from dateutil.relativedelta import relativedelta
 from . import models
 from . import create_pptx
 
@@ -17,26 +19,13 @@ class PriceListView(ListView):
 
 class PriceDetailView(DetailView):
     model = models.PriceNews
-    template_name = 'price/pricenews_detail.html'
-
-    def get_context_data(self, **kwargs):
-        # context = super().get_context_data()
-        # Определяем id заголовка новости, затем таблицу, относящуюся к ней
-        current_pricenews = models.PriceNews.objects.get(id=self.kwargs['pk'])
-        context = {'price_detail': current_pricenews,
-                   'price_list': current_pricenews.products.all(),
-                   }
-        return context
-
-class PriceTemplateView(TemplateView):
-    # model = models.PriceNews
     template_name = 'price/price_detail.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data()
+        # context = super().get_context_data()
         all_petrolnews = models.PricePetrolHead.objects.all()
         # Определяем id заголовка новости
-        current_pricenews = models.PriceNews.objects.get(id=self.kwargs['pk'])
+        current_pricenews = self.model.objects.get(id=self.kwargs['pk'])
         for i in range(len(all_petrolnews)):
             if current_pricenews.pub_date == all_petrolnews[i].pub_date:
                 current_petrol = all_petrolnews[i]
@@ -47,6 +36,37 @@ class PriceTemplateView(TemplateView):
                    'petrol_list': current_petrol.petrols.all(),
                    }
         return context
+
+# class PriceTemplateView(TemplateView):
+#     # model = models.PriceNews
+#     template_name = 'price/price_detail.html'
+#
+#     def get_context_data(self, **kwargs):
+#         # context = super().get_context_data()
+#         all_petrolnews = models.PricePetrolHead.objects.all()
+#         # Определяем id заголовка новости
+#         current_pricenews = models.PriceNews.objects.get(id=self.kwargs['pk'])
+#         for i in range(len(all_petrolnews)):
+#             if current_pricenews.pub_date == all_petrolnews[i].pub_date:
+#                 current_petrol = all_petrolnews[i]
+#
+#         context = {'price_detail': current_pricenews,
+#                    'price_list': current_pricenews.products.all(),
+#                    'petrol_detail': current_petrol,
+#                    'petrol_list': current_petrol.petrols.all(),
+#                    }
+#         return context
+
+
+def cut_date(txt):
+    """
+    Из заголовка вычленяем дату. Например из текста (txt):
+        "Средние  цены на отдельные потребительские товары (услуги)
+         по Ненецкому автономному округу на 13 января 2020 года"
+    получим "13 января 2020".
+    """
+    regex = re.compile('\d{1,2}\s[яфмаисонд][а-я]+[а|я]\s\d{4}')
+    return re.search(regex, txt).group()
 
 
 def products_price(news_id, pet_id):
@@ -67,9 +87,12 @@ def products_price(news_id, pet_id):
     petrolhead = models.PricePetrolHead.objects.get(id=pet_id)
     petrolhead_petrol_all = petrolhead.petrols.all()
     if pricenews.pub_date.year != 2018:
-        previous_pricenews = pricenews.get_previous_by_pub_date()
+        pre_month = pricenews.pub_date + relativedelta(months=-1)
+        previous_pricenews = models.PriceNews.objects.filter(pub_date__lte=pre_month).order_by('-pub_date')[0]
+        # previous_date = previous_pricenews.pub_date.strftime('%d.%m.%Y')
+        previous_date = cut_date(previous_pricenews.title)
         previous_products_all = previous_pricenews.products.all()
-        previous_petrolhead = petrolhead.get_previous_by_pub_date()
+        previous_petrolhead = models.PricePetrolHead.objects.filter(pub_date__lte=pre_month).order_by('-pub_date')[0]
         previous_petrol_all = previous_petrolhead.petrols.all()
     else:  # дошли до 1-ой строки => предыдущая=текущая
         previous_pricenews = pricenews
@@ -99,15 +122,16 @@ def products_price(news_id, pet_id):
             previous_price[i] = previous.price
         # print(f"{current.product},                   {current_price[i]}      {previous_price[i]}")
         i += 1
-    return pricenews, current_price, previous_price
+    return pricenews, current_price, previous_price, previous_date
 
 
 @login_required
+
 def pptx(request):
     news_pk = request.POST.get('news_pk')
     pet_pk = request.POST.get('pet_pk')
-    cur_pricenews, cur_price, prev_price = products_price(news_pk, pet_pk)
-    file_path = create_pptx.new_pptx(cur_pricenews.title, cur_price, prev_price)
+    cur_pricenews, cur_price, prev_price, prev_date = products_price(news_pk, pet_pk)
+    file_path = create_pptx.new_pptx(cur_pricenews.title, cur_price, prev_price, prev_date)
     with open(file_path, 'rb') as fh:
         response = HttpResponse(fh.read(), content_type="application/vnd.openxmlformats-officedocument.presentationml.presentation")
         response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)

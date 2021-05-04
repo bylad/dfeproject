@@ -1,5 +1,6 @@
 # BEGIN my add
 #-----------------------
+local.py
 # Vim temp files
 *.un~
 
@@ -7,12 +8,13 @@
 2018/
 2019/
 2020/
+2021/
 owd/
 ~$*
-*.pptx
 *.ppt
 *.exe
 *.cmd
+.idea/
 #-----------------------
 # END my add
 

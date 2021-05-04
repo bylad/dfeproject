@@ -24,10 +24,10 @@ class SalaryDetailView(DetailView):
     def get_context_data(self, **kwargs):
         # context = super().get_context_data()
         # Определяем id заголовка новости, затем таблицу, отнсящуюся к ней
-        current_salarynews = models.SalaryNews.objects.get(id=self.kwargs['pk'])
+        current_salarynews = self.model.objects.get(id=self.kwargs['pk'])
         context = {
                     'salarynews_detail': current_salarynews,
-                    'salarydetail_list': current_salarynews.salary_set.all(),
+                    'salarydetail_list': current_salarynews.salary_set.all().order_by('id'),
                     'salaryhead_list': current_salarynews.salaryhead_set.all(),
                    }
         return context

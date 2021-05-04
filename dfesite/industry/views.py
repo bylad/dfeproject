@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from . import models
 from . import create_pptx, send_msg
+import requests
 
 
 # Create your views here.
@@ -22,9 +23,9 @@ class IndustryNewsDetailView(DetailView):
     template_name = 'industry/industrynews_detail.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data()
+        # context = super().get_context_data()
         # Определяем id заголовка новости, затем список с таблицами, отнсящимися к ней
-        current_industrynews = models.IndustryNews.objects.get(id=self.kwargs['pk'])
+        current_industrynews = self.model.objects.get(id=self.kwargs['pk'])
         context = {'industry_detail': current_industrynews,
                    'index_list': current_industrynews.news.all(),
                    'production_list': current_industrynews.production.all(),
@@ -36,6 +37,7 @@ class IndustryNewsDetailView(DetailView):
 
 @login_required
 def pptx(request):
+    print("IP Address for debug-toolbar: " + request.META['REMOTE_ADDR'])
     production_type_list = ['Электроэнергия', 'Пар и', 'Изделия хлебобулочные недлит', 'Молоко',
                             'Нефть', 'Кондитерские', 'Масло', 'Оленина']
 

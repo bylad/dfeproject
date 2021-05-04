@@ -63,7 +63,7 @@ def pptx_table(table, current_list, previous_list, m, n):
         row += 1
 
 
-def new_pptx(news_title, current_price_list, previous_price_list):
+def new_pptx(news_title, current_price_list, previous_price_list, previous_pub_date):
     """ Заполнение презентации актуальными данными
         - zagolovok: замена даты в заголовке
         - prom0-7: замена соответствующих показателей
@@ -82,6 +82,11 @@ def new_pptx(news_title, current_price_list, previous_price_list):
                 cur_text = re.sub(regex, news_date_text, cur_text)
                 shape_upd(text_frame, cur_text, 26)
 
+            # Замена даты в нижней сноске
+            if shape.name == 'snoskadate':
+                text_frame = shape.text_frame
+                shape_upd(text_frame, previous_pub_date, 10, 0)
+
             if shape.name == 'table0':
                 pptx_table(shape.table, current_price_list, previous_price_list, 0, 14)
             if shape.name == 'table1':
@@ -90,7 +95,12 @@ def new_pptx(news_title, current_price_list, previous_price_list):
                 pptx_table(shape.table, current_price_list, previous_price_list, 17, 25)
 
     stat_filename = f'Stat_price_{date4filename}.pptx'
-    prs_full_path = os.path.join(MEDIA, 'price', f'{news_date.year}', stat_filename)
+    path_year = os.path.join(MEDIA, 'price',f'{news_date.year}')
+    if os.path.exists(path_year):
+        prs_full_path = os.path.join(path_year, stat_filename)
+    else:
+        os.mkdir(path_year)
+        prs_full_path = os.path.join(path_year, stat_filename)
     print(prs_full_path)
     # if os.path.exists(prs_full_path):
     #     print('Файл с таким именем существует')

@@ -1,9 +1,16 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block body_block %}
+<script src="{% static 'css/jquery-3.6.0.min.js' %}"></script>
 <link rel="stylesheet" href="{% static 'css/mystyle.css' %}">
 <div class="scrollup float-right"><i class="fa fa-chevron-up"></i></div>
-<div class="jumbotron bg-cover" style="background-image: url(/static/images/industrygr.png)">
+<div class="jumbotron bg-cover" style="background-image: url(/static/images/stat_industry.jpg)">
+<!--<style>-->
+<!--    .extremum-slide {-->
+<!--        border:1px solid;-->
+<!--	    padding:50px;-->
+<!--    }-->
+<!--</style>-->
 <!--     style="background-image: linear-gradient(to bottom, rgba(255,255,255,0.6) 0%,rgba(255,255,255,0.9) 100%),-->
 <!--                              url(https://placeimg.com/1500/480/tech/grayscale)">-->
     <h2>Промышленное производство<br>
@@ -12,11 +19,16 @@
 </div>
 
 <div class="container">
-    <p class="lead">
+    <details>
+        <summary>Развернуть</summary>
+        <p class="lead">
         В социально-экономическом развитии Ненецкого автономного округа определяющим является
         минерально-сырьевой комплекс. В общем объеме промышленной продукции, вырабатываемой в
         округе, более 90% составляет продукция нефтедобывающего комплекса.
-    </p>
+        </p>
+    </details>
+
+
     <hr class="my-4">
     <h3>Статистические данные</h3>
 <!--    <h3>О промышленном производстве</h3>-->
@@ -46,4 +58,10 @@
         </p>
     </div>
 </div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(".extremum-click").click(function () {
+      $(this).siblings(".extremum-slide").slideToggle("slow");
+    });
+</script>
 {% endblock%}

@@ -9,7 +9,7 @@ class SalaryHeadAdmin(admin.ModelAdmin):
     list_display = ['salarynews_id', 'current_my', 'period_mmy', 'pre_month', 'pre_year', 'pre_period', 'middle']
 
 class SalaryAdmin(admin.ModelAdmin):
-    list_display = ['salarynews_id', 'employer', 'current', 'pre_month', 'pre_year', 'period', 'pre_period', 'middle']
+    list_display = ['id', 'salarynews_id', 'employer', 'current', 'pre_month', 'pre_year', 'period', 'pre_period', 'middle']
 
 admin.site.register(models.SalaryNews, SalaryNewsAdmin)
 admin.site.register(models.SalaryHead, SalaryHeadAdmin)
