@@ -1,6 +1,6 @@
 import os
 import re
-import win32com.client
+import subprocess 
 import docx
 
 
@@ -29,7 +29,6 @@ class WebFile(File):
 
 class DocxFile(File):
     def doc2docx(self):
-        word = win32com.client.Dispatch("Word.application")
         for dir_path, dirs, files in os.walk(self.directory):
             for file_name in files:
                 file_path = os.path.join(dir_path, file_name)
@@ -40,11 +39,8 @@ class DocxFile(File):
                     if not os.path.isfile(docx_file):
                         print('Преобразование в docx\n{0}\n'.format(file_path))
                         try:
-                            word_doc = word.Documents.Open(file_path, False, False, False)
-                            # Замена слеша в пути с / на \\, т.к. doc.SaveAs не отрабатывает /
-                            docxf = re.sub('/', '\\\\', docx_file)
-                            word_doc.SaveAs2(docxf, FileFormat=16)
-                            word_doc.Close()
+                            os.chdir(self.directory)
+                            subprocess.call(['lowriter', '--convert-to', 'docx', file_path])
                         except Exception:
                             print('Failed to Convert: {0}'.format(file_path))
 

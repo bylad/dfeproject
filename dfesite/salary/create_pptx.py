@@ -89,7 +89,6 @@ def new_pptx(title_date, cur_list, prev_list):
             shape_list(sh, cur_list, prev_list)
 
     stat_filename = f'Stat_salary_{date4filename}.pptx'
-
     path_year = os.path.join(MEDIA, 'salary', f'{title_date.year}')
     if os.path.exists(path_year):
         prs_full_path = os.path.join(path_year, stat_filename)

@@ -28,11 +28,12 @@ MEDIA_DIR = os.path.join(BASE_DIR, 'media')
 SECRET_KEY = sec_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['127.0.0.1',
                  '192.168.45.8',
-                 '192.168.45.225',]
+                 '192.168.45.225',
+                 '194.87.144.136',]
 
 
 # Application definition
@@ -99,12 +100,10 @@ WSGI_APPLICATION = 'dfesite.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'djangodfe',
         'USER': db_user,
         'PASSWORD': db_pass,
-        # 'USER': os.environ.get('DB_USER'),
-        # 'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': 'localhost',
         'PORT': '',
     }

@@ -107,7 +107,6 @@ def new_pptx(production_list, idx, news_title):
         os.mkdir(path_year)
         prs_full_path = os.path.join(path_year, stat_filename)
 
-    # prs_full_path = os.path.join(MEDIA, 'industry', f'{date_list[0]}', stat_filename)
     print(prs_full_path)
     # if os.path.exists(prs_full_path):
     #     print('Файл с таким именем существует')
