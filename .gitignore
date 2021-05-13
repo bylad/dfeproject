@@ -3,18 +3,22 @@
 local.py
 # Vim temp files
 *.un~
-
 # Ignore folders and files (Windows)
 2018/
 2019/
 2020/
 2021/
+2022/
+2023/
 owd/
 ~$*
 *.ppt
+*.pptx
 *.exe
 *.cmd
 .idea/
+# Exclude from ignore list
+!dfesite/**/sample/**
 #-----------------------
 # END my add
 
