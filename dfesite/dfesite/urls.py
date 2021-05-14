@@ -29,6 +29,6 @@ urlpatterns = [
     path('price/', include('price.urls', namespace='price')),
     path('salary/', include('salary.urls', namespace='salary')),
     path('rate/', include('rate.urls', namespace='rate')),
-    # path('cert/', include('cert.urls', namespace='cert')),
+    path('blog/', include('blog.urls', namespace='blog')),
     path('__debug__/', include(debug_toolbar.urls)),
 ]

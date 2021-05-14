@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body_block %}
+
+<!--<div class="jumbotron bg-cover"-->
+<!--     style="background-image: url(/static/images/docs.jpg)">-->
+<!--    <h2>Документация</h2>-->
+<!--        <ol class="breadcrumb">-->
+<!--            <li class="breadcrumb-item"><a href="#">Home</a></li>-->
+<!--            <li class="breadcrumb-item active" aria-current="page">Blog</li>-->
+<!--        </ol>-->
+
+<!--</div>-->
+<!--<div class="container">-->
+<!--    <div class="list-group">-->
+<!--        <li>Кейсистемс</li>-->
+<!--        <li>Криста</li>-->
+<!--        <li>Мануалы</li>-->
+<!--    </div>-->
+<!--</div>-->
+<section id="page-title">
+    <div class="container clearfix">
+        <h1>
+            {% if subcategory.h1 %}
+                {{ subcategory.h1 }}
+            {% else %}
+                {% if category.h1 %}
+                    {{ category.h1 }}
+                {% else %}
+                    {% for h1_blog in seodata %}
+                        {{ h1_blog.h1 }}
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+        </h1>
+        <span>
+            {% if subcategory.mini_description %}
+                {{ subcategory.mini_description }}
+            {% else %}
+                {% if category.mini_description %}
+                    {{ category.mini_description }}
+                {% else %}
+                    {% for mini_desc in seodata %}
+                        {{ mini_desc.mini_description }}
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+        </span>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Blog</li>
+        </ol>
+    </div>
+</section>
+<div class="container">
+    {% block title %}
+        {% if subcategory.title %}
+            {{ subcategory.title }}
+        {% else %}
+            {% if category.title %}
+                {{ category.title }}
+            {% else %}
+                {% for title in seodata %}
+                    {{ title.title }}
+                {% endfor %}
+            {% endif %}
+        {% endif %}
+    {% endblock %}
+
+    {% block META_description %}
+        {% if subcategory.description %}
+            {{ subcategory.title }}
+        {% else %}
+            {% if category.description %}
+                {{ category.title }}
+            {% else %}
+                {% for description in seodata %}
+                    {{ description.description }}
+                {% endfor %}
+            {% endif %}
+        {% endif %}
+    {% endblock %}
+</div>
+<!--    <h3>Статистические данные</h3>-->
+<!--    <div class="list-group">-->
+<!--    {% for news in news_list %}-->
+<!--       <a href="{{ news.id }}" class="list-group-item list-group-item-action ">{{ news.title }}</a>-->
+<!--    {% endfor %}-->
+<!--        <p>-->
+<!--        <nav aria-label="Page navigation example">-->
+<!--            <ul class="pagination">-->
+<!--            {% if page_obj.has_previous %}-->
+<!--                <li class="page-item"><a class="page-link" href="?page=1">&laquo;</a></li>-->
+<!--                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">предыдущая</a></li>-->
+<!--            {% endif %}-->
+
+<!--                <span class="page-link current text-dark">-->
+<!--                    Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}-->
+<!--                </span>-->
+
+<!--            {% if page_obj.has_next %}-->
+<!--                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">следующая</a></li>-->
+<!--                <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">&raquo;</a></li>-->
+<!--            {% endif %}-->
+<!--            </ul>-->
+<!--        </nav>-->
+<!--        </p>-->
+<!--    </div>-->
+
+
+{% endblock%}
