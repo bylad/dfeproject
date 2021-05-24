@@ -4,6 +4,7 @@ import subprocess
 from bs4 import BeautifulSoup
 import datetime
 import dateparser
+import win32com.client
 import docx
 from transliterate import translit
 
@@ -64,6 +65,7 @@ def date_int(newstitle):
 def doc2docx(basedir):
     """ Преобразуем файл DOC в DOCX
     """
+    word = win32com.client.Dispatch("Word.application")
     for dir_path, dirs, files in os.walk(basedir):
         for file_name in files:
             file_path = os.path.join(dir_path, file_name)
@@ -74,10 +76,13 @@ def doc2docx(basedir):
                 if not os.path.isfile(docx_file):
                     print(f'Преобразование в docx\n{file_path}\n')
                     try:
-                        os.chdir(basedir)
-                        subprocess.call(['lowriter', '--convert-to', 'docx', file_path])
+                        word_doc = word.Documents.Open(file_path, False, False, False)
+                        # Замена слеша в пути с / на \\, т.к. doc.SaveAs не отрабатывает /
+                        docxf = re.sub('/', '\\\\', docx_file)
+                        word_doc.SaveAs2(docxf, FileFormat=16)
+                        word_doc.Close()
                     except Exception:
-                        print('Failed to Convert: {file_path}')
+                        print(f'Failed to Convert: {file_path}')
 
 
 def table_doc(doc):
@@ -218,7 +223,7 @@ def create_file(news, header, year):
             f.write(news_item.file_href.content)
 
     # Перевод doc файла в docx
-    if not os.path.exists(f_path+'x'):
+    if not os.path.exists(f"{f_path}x"):
         doc2docx(dir_path)
 
     docx_file = docx.Document(f_path+'x')
