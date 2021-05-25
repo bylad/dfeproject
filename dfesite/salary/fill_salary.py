@@ -376,6 +376,7 @@ def search_news(page, news_text):
 def populate():
     news_find = 'реднемесячная номинальная начисленная заработная плата'
     page_num = last_added_news(news_find)
+    print(f'page_num={page_num}')
     while page_num > 0:
         # 0-количество новостей, 1-заголовок, 2-ссылка, 3-дата, 4-файл (либо путь к xl, либо объект docx)
         newsdata = search_news(page_num, news_find)
