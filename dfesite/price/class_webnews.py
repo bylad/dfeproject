@@ -18,7 +18,6 @@ class NewsStat(NewsLocate):
         super().__init__(*args, **kwargs)
         all_a = self.soup.findAll('a', text=re.compile(txt))
         self.acount = len(all_a)
-        # print(f"tag A count = {self.acount}")
         if self.acount == 0:
             self.atag = None
         else:

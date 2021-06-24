@@ -7,7 +7,7 @@ import requests
 from jinja2 import Environment, PackageLoader
 import os
 
-HTTP_LINK = 'http://192.168.45.225:8000'
+HTTP_LINK = 'http://127.0.0.1:8000'
 
 
 def get_ip():

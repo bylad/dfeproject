@@ -240,7 +240,7 @@ def mid_news(news_num, page):
     Возвращает количество найденных новостей на странице
     0-количество новостей, 1-заголовок, 2-ссылка, 3-дата, 4-файл (либо путь к xl, либо объект docx)
     """
-    newsdata = search_news(news_num, page, 'Средние цены и их изменение на отдельные потребительские товары')
+    newsdata = search_news(news_num, page, 'потребительские')
     all_news = PriceNews.objects.all().order_by('-pub_date')
     for news in all_news:  # добавлена проверка, т.к. на сайте статистики м.б. ошибочная дата в заголовке
         if news.title == newsdata[1] and news.pub_date != newsdata[3]:
@@ -441,14 +441,18 @@ def populate():
     print('============== price.populate ===============')
     while page_num < 5:
         print(f'page={page_num}')
-        data_exist, mnews_id = from_web(page_num)
-        if data_exist == 1:
-            print('===========PRICE DATA EXIST===========')
-            break
-        page_num += 1
-        current_news = PriceNews.objects.get(id=mnews_id)
-        print(f'current_news.id={current_news.id}')
-        send_msg.sending('price', current_news.id, current_news.title)
+        try:
+            data_exist, mnews_id = from_web(page_num)
+            if data_exist == 1:
+                print('===========PRICE DATA EXIST===========')
+                break
+            page_num += 1
+            current_news = PriceNews.objects.get(id=mnews_id)
+            if current_news:
+                print(f'current_news.id={current_news.id}')
+                send_msg.sending('price', current_news.id, current_news.title)
+        except Exception as e:
+            print(e)
     print('Процедура выполнена')
 
 # if __name__ == "__main__":
