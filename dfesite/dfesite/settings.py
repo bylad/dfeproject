@@ -16,9 +16,9 @@ from .local import *
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
-STATIC_DIR = os.path.join(BASE_DIR, 'static')
-MEDIA_DIR = os.path.join(BASE_DIR, 'media')
+TEMPLATE_DIR = Path(BASE_DIR, 'templates')
+STATIC_DIR = Path(BASE_DIR, 'static')
+MEDIA_DIR = Path(BASE_DIR, 'media')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
@@ -31,7 +31,7 @@ SECRET_KEY = sec_key
 DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1',
-                 '192.168.45.225',]
+                 '192.168.45.225']
 
 
 # Application definition
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'mathfilters',
     'industry',
+    'population.apps.PopulationConfig',
     'price',
     'salary',
     'rate',
@@ -77,7 +78,7 @@ ROOT_URLCONF = 'dfesite.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [TEMPLATE_DIR,],
+        'DIRS': [TEMPLATE_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

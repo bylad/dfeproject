@@ -3,7 +3,6 @@ import re
 import subprocess 
 import docx
 
-
 class File:
     def __init__(self, media, appdir, year, filename):  # при исп. MEDIA удалить media
         self.directory = os.path.join(media, appdir, year)
@@ -20,7 +19,7 @@ class WebFile(File):
             try:
                 os.makedirs(self.directory)
             except FileExistsError:
-                print(f'Закачка пропущена, файл существует: \n{self.file_path}')
+                print(f'Каталог {self.directory} существует')
             with open(self.file_path, 'wb') as f:
                 f.write(self.file_href.content)
         else:
@@ -40,9 +39,14 @@ class DocxFile(File):
                         print('Преобразование в docx\n{0}\n'.format(file_path))
                         try:
                             os.chdir(self.directory)
-                            subprocess.call(['lowriter', '--convert-to', 'docx', file_path])
+                            if os.name.lower() == 'nt':
+                                subprocess.call(['C:/Program Files/LibreOffice/program/soffice.exe',
+                                                 '--convert-to', 'docx', file_path])
+                            else:
+                                subprocess.call(['lowriter', '--convert-to', 'docx', file_path])
                         except Exception:
                             print('Failed to Convert: {0}'.format(file_path))
+                            print('Check if exist LibreOffice in your operating system!')
 
     def get_docx(self):
         if self.file_path.lower()[-1] == 'x':

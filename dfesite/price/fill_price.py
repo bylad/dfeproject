@@ -8,10 +8,7 @@ import dateparser
 from datetime import timedelta
 
 from django.db import transaction
-from django.conf import settings # correct way for access BASE_DIR, MEDIA_DIR...
-# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dfesite.settings')
-# import django
-# django.setup()
+from django.conf import settings  # correct way for access BASE_DIR, MEDIA_DIR...
 
 from .class_webnews import NewsStat, NewsStatDetail
 from .class_filehandle import WebFile, DocxFile
@@ -131,8 +128,7 @@ def data_xls(xls):  # предыдущая версия data_xls(xls, search_txt
     # print(f'{col_price}\n')
     # sys.exit()
     return xls_title, col_name, col_price
-#--------------------------------
-
+# --------------------------------
 
 def data_openpyxl(xlsx, search_txt):
     j = 0
@@ -176,26 +172,22 @@ def data_openpyxl(xlsx, search_txt):
 
     print('Обработка Excel файла успешно завершена.\n')
     return xls_title, col_name, col_price
-#--------------------------------
+# --------------------------------
 
 
 def check_db(news_date, is_petrol):
     """ Проверка наличия данных в базе (0 - нет, 1 - есть)
     is_petrol: цены на бензин (0 - нет, 1 - да)
     """
-    data_exists = 1
     if is_petrol:
         db_data = PricePetrolHead.objects.all()
     else:
         db_data = PriceNews.objects.all()
     for i in range(len(db_data)):
         if news_date.date() == db_data[i].pub_date.date():
-            data_exists = 1
             print(f'Данные уже в базе!')
-            break
-        else:
-            data_exists = 0
-    return data_exists
+            return 1
+    return 0
 
 
 # ---Добавление данных с сайта---
@@ -313,7 +305,8 @@ def from_web(page):
         pet_count = pet_news(pet_num, page)
         pet_num += 1
     return data_in_db, midnews_id
-#--------------------------------
+
+# --------------------------------
 # 2020. Загрузка данных из ранее скачанных файлов
 def from_xlsdocx(path):
     for filename in os.listdir(path):

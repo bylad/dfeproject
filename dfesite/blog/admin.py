@@ -9,6 +9,7 @@ class BlogPageAdmin(admin.ModelAdmin):
 class CategoryBlogAdmin(admin.ModelAdmin):
     list_display = ('title',)
 
+
 # Register your models here.
 admin.site.register(BlogPage, BlogPageAdmin)
 admin.site.register(CategoryBlog, CategoryBlogAdmin)
