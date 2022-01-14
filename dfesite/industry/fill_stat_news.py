@@ -4,7 +4,7 @@ import subprocess
 from bs4 import BeautifulSoup
 import datetime
 import dateparser
-import win32com.client
+# import win32com.client
 import docx
 from transliterate import translit
 
@@ -13,7 +13,7 @@ from django.conf import settings # correct way for access BASE_DIR, MEDIA_DIR...
 # import django
 # django.setup()
 from .models import (IndustryNews, IndustryIndex, IndustryProduction, IndustryIndexHead, IndustryProductionHead)
-from . import  send_msg
+from . import send_msg
 from django.db import transaction
 
 MEDIA = settings.MEDIA_DIR

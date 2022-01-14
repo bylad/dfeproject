@@ -14,6 +14,7 @@ class PricePetrolHeadAdmin(admin.ModelAdmin):
 class PricePetrolDataAdmin(admin.ModelAdmin):
     list_display = ['pricepetrolhead', 'petrol', 'price']
 
+
 admin.site.register(models.PriceNews, PriceNewsAdmin)
 admin.site.register(models.PriceData, PriceDataAdmin)
 admin.site.register(models.PricePetrolHead, PricePetrolHeadAdmin)

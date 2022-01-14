@@ -11,6 +11,7 @@ from django.conf import settings
 
 MEDIA = settings.MEDIA_DIR
 
+
 # Create your views here.
 class DailyListView(ListView):
     template_name = 'rate/daily_list.html'
@@ -56,6 +57,7 @@ class DailyListView(ListView):
         context['all'] = days
         return context
 
+
 class MonthlyListView(ListView):
     template_name = 'rate/monthly_list.html'
     context_object_name = 'monthly'
@@ -76,13 +78,11 @@ class MonthlyListView(ListView):
     fig.add_trace(go.Scatter(x=xm_data, y=zm_data, mode='lines', name='Нефть', opacity=0.8))
     fig.add_trace(go.Scatter(x=xm_data, y=ym_data, mode='lines', name='USD', opacity=0.8))
     fig.update_layout(
-        title = {
-                'text': 'Динамика курса доллара и нефти "Юралс"',
-                'y': 0.9,
-                'x': 0.5,
-                'xanchor': 'center',
-                'yanchor': 'top',
-            },
+        title={'text': 'Динамика курса доллара и нефти "Юралс"',
+               'y': 0.9,
+               'x': 0.5,
+               'xanchor': 'center',
+               'yanchor': 'top'},
     )
     plot_divm = plot(fig, output_type='div')
 

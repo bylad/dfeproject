@@ -1,8 +1,7 @@
 import os
 import re
-import win32com.client
+import subprocess
 import docx
-
 
 class File:
     def __init__(self, media, appdir, year, filename):  # при исп. MEDIA удалить media
@@ -20,7 +19,7 @@ class WebFile(File):
             try:
                 os.makedirs(self.directory)
             except FileExistsError:
-                print(f'Закачка пропущена, файл существует: \n{self.file_path}')
+                print(f'Каталог {self.directory} существует')
             with open(self.file_path, 'wb') as f:
                 f.write(self.file_href.content)
         else:
@@ -29,7 +28,6 @@ class WebFile(File):
 
 class DocxFile(File):
     def doc2docx(self):
-        word = win32com.client.Dispatch("Word.application")
         for dir_path, dirs, files in os.walk(self.directory):
             for file_name in files:
                 file_path = os.path.join(dir_path, file_name)
@@ -40,13 +38,15 @@ class DocxFile(File):
                     if not os.path.isfile(docx_file):
                         print('Преобразование в docx\n{0}\n'.format(file_path))
                         try:
-                            word_doc = word.Documents.Open(file_path, False, False, False)
-                            # Замена слеша в пути с / на \\, т.к. doc.SaveAs не отрабатывает /
-                            docxf = re.sub('/', '\\\\', docx_file)
-                            word_doc.SaveAs2(docxf, FileFormat=16)
-                            word_doc.Close()
+                            os.chdir(self.directory)
+                            if os.name.lower() == 'nt':
+                                subprocess.call(['C:/Program Files/LibreOffice/program/soffice.exe',
+                                                 '--convert-to', 'docx', file_path])
+                            else:
+                                subprocess.call(['lowriter', '--convert-to', 'docx', file_path])
                         except Exception:
                             print('Failed to Convert: {0}'.format(file_path))
+                            print('Check if exist LibreOffice in your operating system!')
 
     def get_docx(self):
         if self.file_path.lower()[-1] == 'x':
