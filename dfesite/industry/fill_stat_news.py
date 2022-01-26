@@ -1,5 +1,6 @@
 import os
-import re, requests
+import re
+import requests
 import subprocess
 from bs4 import BeautifulSoup
 import datetime
@@ -7,19 +8,14 @@ import dateparser
 import docx
 from transliterate import translit
 
-from django.conf import settings # correct way for access BASE_DIR, MEDIA_DIR...
-# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dfesite.settings')
-# import django
-# django.setup()
-from .models import (IndustryNews, IndustryIndex, IndustryProduction, IndustryIndexHead, IndustryProductionHead)
-from . import  send_msg
 from django.db import transaction
+from django.conf import settings  # correct way for access BASE_DIR, MEDIA_DIR...
+
+from .models import (IndustryNews, IndustryIndex, IndustryProduction, IndustryIndexHead, IndustryProductionHead)
+from . import send_msg
+from dfesite.constants import MONTHE
 
 MEDIA = settings.MEDIA_DIR
-monthe = ['январе', 'феврале', 'марте', 'апреле', 'мае', 'июне', 'июле',
-          'августе', 'сентябре', 'октябре', 'ноябре', 'декабре']
-months = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль',
-          'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь']
 
 
 class NewsLocate:
@@ -30,7 +26,7 @@ class NewsLocate:
         if self.atag is not None:
             atag_parent = self.atag.parent.parent
             try:
-                news_date = translit(atag_parent.find('div', class_='news-card__data').text,'ru')
+                news_date = translit(atag_parent.find('div', class_='news-card__data').text, 'ru')
             except AttributeError:
                 news_date = '9 сентября 1999'
                 print("Attribute Error! News date was dropped!")
@@ -51,12 +47,12 @@ def date_int(newstitle):
         dig0-год, dig1-месяц1, dig2-месяц2
     """
     dig = [int(s) for s in newstitle.split() if s.isdigit()]
-    for string in monthe:
+    for string in MONTHE:
         regex = re.compile(string)
         match = re.search(regex, newstitle)
         if match:
             mesyac = newstitle[match.start():match.end()]
-            monthnum = '{:02}'.format(monthe.index(mesyac) + 1)
+            monthnum = '{:02}'.format(MONTHE.index(mesyac) + 1)
             dig.append(int(monthnum))
     return dig
 
@@ -77,16 +73,16 @@ def doc2docx(basedir):
                         os.chdir(basedir)
                         subprocess.call(['lowriter', '--convert-to', 'docx', file_path])
                     except Exception:
-                        print('Failed to Convert: {file_path}')
+                        print(f'Failed to Convert: {file_path}')
 
 
 def table_doc(doc):
-    data = [[],[]]
+    data = [[], []]
     for t in range(2):  # ранее использовали len(doc.tables), отказался, т.к. в подписи могут добавить еще таблицу
         table = doc.tables[t]
         table_columns = len(table.columns)
         # В январе 2021г. 3 столбца
-        if t == 0 and table_columns != 4: # за январь видно 3 столбца, по факту 4 (объединены)
+        if t == 0 and table_columns != 4:  # за январь видно 3 столбца, по факту 4 (объединены)
             print(f'Внимание! Изменилась структура таблицы, проверьте скачанный файл.')
             print(f'Количество столбцов в таблице t[{t}] = {table_columns}.')
             os.system("pause")
@@ -110,7 +106,7 @@ def floating(start, t):
     :param t: таблица в виде списка
     """
     for row in range(start, len(t)):
-        for col in range(1, len(t[1])): # обработка со второго столбца
+        for col in range(1, len(t[1])):  # обработка со второго столбца
             if t[row][col][:3] == '...':
                 t[row][col] = '0,0'
             t[row][col] = float(re.sub('[^0-9,]', "", t[row][col]).replace(",", "."))
@@ -264,8 +260,3 @@ def populate():
 
         page -= 1
         print('--------------------------------------------------------')
-
-#
-# if __name__ == "__main__":
-#     populate()
-

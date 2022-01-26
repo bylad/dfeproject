@@ -1,10 +1,9 @@
 import os
-import re
-import subprocess 
+import subprocess
 import docx
 
 class File:
-    def __init__(self, media, appdir, year, filename):  # при исп. MEDIA удалить media
+    def __init__(self, media, appdir, year, filename):
         self.directory = os.path.join(media, appdir, year)
         self.file_path = os.path.join(media, appdir, year, filename)
 
@@ -14,12 +13,22 @@ class WebFile(File):
         super().__init__(*args, **kwargs)
         self.file_href = file_href
 
-    def download_file(self):
+    def download_file(self, rename=0):
+        """ Функция скачивает файл по ссылке
+        :param rename: 0 - не переименовывать, пропускать закачку, 1 - закачать с другим именем
+        :return:
+        """
         if not os.path.exists(self.file_path):
             try:
                 os.makedirs(self.directory)
             except FileExistsError:
                 print(f'Каталог {self.directory} существует')
+            with open(self.file_path, 'wb') as f:
+                f.write(self.file_href.content)
+        elif rename:
+            print(f"Old: {self.file_path}")
+            self.file_path = rename_file(self.file_path)
+            print(f"New: {self.file_path}")
             with open(self.file_path, 'wb') as f:
                 f.write(self.file_href.content)
         else:
@@ -53,3 +62,13 @@ class DocxFile(File):
             return docx.Document(self.file_path)
         DocxFile.doc2docx(self)
         return docx.Document(self.file_path+'x')
+
+
+def rename_file(full_path):
+    i = 1
+    path_splitext = os.path.splitext(full_path)  # 0 - полное имя без расширения, 1 - расширение
+    new_path = f"{path_splitext[0]}{i}{path_splitext[1]}"
+    while os.path.exists(new_path):
+        i += 1
+        new_path = f"{path_splitext[0]}{i}{path_splitext[1]}"
+    return new_path

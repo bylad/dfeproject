@@ -10,9 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
-import os
+# import os
 from pathlib import Path
-from .local import *
+from .local import sec_key, db_user, db_pass
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,7 +24,6 @@ MEDIA_DIR = Path(BASE_DIR, 'media')
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = os.environ.get('SECRET_KEY')
 SECRET_KEY = sec_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -47,10 +46,11 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'mathfilters',
     'industry',
-    'population.apps.PopulationConfig',
+    'population',
     'price',
-    'salary',
     'rate',
+    'salary',
+    'subsidy',
     'blog.apps.BlogConfig',
 ]
 
@@ -160,3 +160,4 @@ LOGOUT_REDIRECT_URL = '/'
 SESSION_EXPIRE_SECONDS = 6000  # 100min
 SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
 SESSION_TIMEOUT_REDIRECT = '/'
+

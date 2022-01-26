@@ -7,10 +7,7 @@ from pathlib import Path
 from transliterate import translit
 from . import create_pptx
 from . import models
-
-
-MONTHE = ['январе', 'феврале', 'марте', 'апреле', 'мае', 'июне', 'июле',
-          'августе', 'сентябре', 'октябре', 'ноябре', 'декабре']
+from dfesite.constants import MONTHE
 
 
 class PopulationListView(ListView):

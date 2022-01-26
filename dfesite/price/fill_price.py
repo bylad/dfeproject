@@ -5,27 +5,21 @@ import xlrd
 import docx
 import openpyxl
 import dateparser
-from datetime import timedelta
+import urllib3
 
+from datetime import timedelta
 from django.db import transaction
 from django.conf import settings  # correct way for access BASE_DIR, MEDIA_DIR...
 
 from .class_webnews import NewsStat, NewsStatDetail
 from .class_filehandle import WebFile, DocxFile
 from .models import PriceNews, PriceData, PricePetrolHead, PricePetrolData
+from dfesite.constants import HEADER, MONTHS
 from industry import send_msg
 
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 MEDIA = settings.MEDIA_DIR
-
-MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля',
-          'августа', 'сентября', 'октября', 'ноября', 'декабря']
-
-HEADER = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
-          AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 \
-          Safari/537.36'}
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 SEARCH_TXT1 = 'Ненецкий автономный округ'
 SEARCH_TXT2 = 'Нарьян-Мар'
@@ -62,7 +56,7 @@ def cut_date(txt):
          по Ненецкому автономному округу на 13 января 2020 года"
     получим "13 января 2020". Ф-я возвращает эту строку в формате дата.
     """
-    regex = re.compile('\d{1,2}\s[яфмаисонд][а-я]+[а|я]\s\d{4}')
+    regex = re.compile(r'\d{1,2}\s[яфмаисонд][а-я]+[а|я]\s\d{4}')
     return dateparser.parse(re.search(regex, txt).group())
 
 
@@ -102,7 +96,7 @@ def data_xls(xls):  # предыдущая версия data_xls(xls, search_txt
     ws = wb.sheet_by_index(0)
 
     # удаляем из заголовка все лишние пробелы, символы новой строки и подстроку CUT_NM
-    xls_title = re.sub('\s+', ' ', ws.cell_value(0, 0)).replace(CUT_NM, '')
+    xls_title = re.sub(r'\s+', ' ', ws.cell_value(0, 0)).replace(CUT_NM, '')
     for i in range(ws.nrows):
         if re.search(SEARCH_TXT1, ws.cell_value(i, 0)):
             data_begin = i
@@ -137,7 +131,7 @@ def data_openpyxl(xlsx, search_txt):
     regex = re.compile(search_txt)
     wb = openpyxl.load_workbook(xlsx)
     ws = wb.worksheets[0]
-    xls_title = re.sub('\s+', ' ', ws.cell(row=1, column=1).value)  # удаляем все лишние пробелы, символы новой строки
+    xls_title = re.sub(r'\s+', ' ', ws.cell(row=1, column=1).value)  # удаляем все лишние пробелы, символы новой строки
     for i in range(1, ws.max_row):
         if re.search(regex, ws.cell(row=i, column=1).value):
             data_i = i
@@ -232,12 +226,13 @@ def mid_news(news_num, page):
     Возвращает количество найденных новостей на странице
     0-количество новостей, 1-заголовок, 2-ссылка, 3-дата, 4-файл (либо путь к xl, либо объект docx)
     """
+    news_id = None
     newsdata = search_news(news_num, page, 'Средние цены и их изменение на отдельные потребительские товары')
     all_news = PriceNews.objects.all().order_by('-pub_date')
     for news in all_news:  # добавлена проверка, т.к. на сайте статистики м.б. ошибочная дата в заголовке
         if news.title == newsdata[1] and news.pub_date != newsdata[3]:
             previous_news = news.get_previous_by_pub_date()
-            pattern = re.compile('\d{1,2}\s[яфмаисонд][а-я]+[а|я]\s\d{4}')
+            pattern = re.compile(r'\d{1,2}\s[яфмаисонд][а-я]+[а|я]\s\d{4}')
             previous_news_title_date = dateparser.parse(re.search(pattern, previous_news.title).group())
             # т.к. данные обновляются еженедельно, то к предыдущей дате добавляем 7 дней
             newsdate = previous_news_title_date + timedelta(days=7)
@@ -292,6 +287,7 @@ def from_web(page):
     pet_num = 0
     pet_count = 1
     data_in_db = 0
+    midnews_id = None
 
     while mid_num < mid_count:
         print('mid_news RUNNING...')
@@ -329,7 +325,7 @@ def from_xlsdocx(path):
                     add_petdata(news_id, products[p], prices[p])
         else:
             continue
-#----------------------------------------------------
+# ----------------------------------------------------
 # 2019-2018. Загрузка данных из ранее скачанных файлов
 def data_xlsm(xls, product_column):
     """
@@ -348,9 +344,9 @@ def data_xlsm(xls, product_column):
     ws = wb.sheet_by_index(0)
 
     if product_column:
-        title = re.sub('\s+', ' ', ws.cell_value(0, 4)) + ' ' + re.sub('\s+', ' ', ws.cell_value(1, 4))
+        title = re.sub(r'\s+', ' ', ws.cell_value(0, 4)) + ' ' + re.sub(r'\s+', ' ', ws.cell_value(1, 4))
     else:
-        title = re.sub('\s+', ' ', ws.cell_value(0, 0)) + ' ' + re.sub('\s+', ' ', ws.cell_value(1, 0))[:-2]
+        title = re.sub(r'\s+', ' ', ws.cell_value(0, 0)) + ' ' + re.sub(r'\s+', ' ', ws.cell_value(1, 0))[:-2]
 
     for i in range(ws.nrows):
         if re.search(regex_nao, ws.cell_value(i, product_column)):
@@ -415,17 +411,17 @@ def from_xlsm(path):
                         news_id = add_pethead(xl_title, '', xl_date)
                         for p in range(len(products)):  # кол-во строк с ценами на товары
                             add_petdata(news_id, products[p], prices[p])
-#----------------------------------------------------
+# ----------------------------------------------------
 # Добавление данных из файлов xls, docx (2020)
 # files_dir = "d:/code/python/study/djangoproject/dfesite/media/price/__source/2020"
 # from_xlsdocx(files_dir)
 
-#----------------------------------------------------
+# ----------------------------------------------------
 # Добавление данных из файлов xlsm (2019)
 # files_dir = "d:/code/python/study/djangoproject/dfesite/media/price/__source/2019"
 # from_xlsm(files_dir)
 
-#----------------------------------------------------
+# ----------------------------------------------------
 # Добавление данных с сайта
 
 @transaction.atomic

@@ -1,14 +1,13 @@
 import os
-from django.shortcuts import render
-from django.views.generic import TemplateView, ListView, DetailView
+# from django.shortcuts import render
+from django.views.generic import ListView, DetailView
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from . import models
 from . import create_pptx
 from . import fill_salary
 
-MONTHS = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль',
-          'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь']
+from dfesite.constants import MONTHS
 
 # Create your views here.
 class SalaryListView(ListView):

@@ -6,9 +6,9 @@ import dateparser
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
+from .models import Daily, Monthly
 
 MEDIA = settings.MEDIA_DIR
-from .models import Daily, Monthly
 
 def sheet_daily(file_path, to_day):
     """ Ежедневно заполняем лист с курсом доллара

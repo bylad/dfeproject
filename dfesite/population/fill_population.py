@@ -3,24 +3,19 @@ import re
 import requests
 import urllib3
 
+from django.conf import settings
 from django.db import transaction
-from django.conf import settings  # correct way for access BASE_DIR, MEDIA_DIR...
 
 from price.class_webnews import PopulationStat
 from price.class_filehandle import WebFile, DocxFile
 from transliterate import translit
 
 from industry import send_msg
+from dfesite.constants import HEADER
 from population.models import MigrationHead, MigrationData, ZagsHead, ZagsData
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 MEDIA = settings.MEDIA_DIR
-HEADER = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
-          AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 \
-          Safari/537.36'}
-MONTHE = ['январе', 'феврале', 'марте', 'апреле', 'мае', 'июне', 'июле',
-          'августе', 'сентябре', 'октябре', 'ноябре', 'декабре']
-NAO = "Ненецкий автономный округ"
 SEARCH_MIGRATION = 'О числе прибывших, выбывших'
 SEARCH_ZAGS = 'О числе зарегистрированных родившихся'
 
@@ -108,6 +103,7 @@ def putto_db(srch_txt):
     """ Функция выполняет проверку на наличие новых данных и в случае отсутствия добавляет в БД
     :param srch_txt: искомый текст
     """
+    migrhead_pk = None
     try:
         db_migrhead = MigrationHead.objects.all().order_by('-pub_date')
         db_zagshead = ZagsHead.objects.all().order_by('-pub_date')
