@@ -1,26 +1,21 @@
 import os
-import re, requests
+import re
+import requests
 import subprocess
 from bs4 import BeautifulSoup
 import datetime
 import dateparser
-# import win32com.client
 import docx
 from transliterate import translit
 
-from django.conf import settings # correct way for access BASE_DIR, MEDIA_DIR...
-# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dfesite.settings')
-# import django
-# django.setup()
+from django.db import transaction
+from django.conf import settings  # correct way for access BASE_DIR, MEDIA_DIR...
+
 from .models import (IndustryNews, IndustryIndex, IndustryProduction, IndustryIndexHead, IndustryProductionHead)
 from . import send_msg
-from django.db import transaction
+from dfesite.constants import HEADER, MONTHE
 
 MEDIA = settings.MEDIA_DIR
-monthe = ['январе', 'феврале', 'марте', 'апреле', 'мае', 'июне', 'июле',
-          'августе', 'сентябре', 'октябре', 'ноябре', 'декабре']
-months = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль',
-          'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь']
 
 
 class NewsLocate:
@@ -31,7 +26,7 @@ class NewsLocate:
         if self.atag is not None:
             atag_parent = self.atag.parent.parent
             try:
-                news_date = translit(atag_parent.find('div', class_='news-card__data').text,'ru')
+                news_date = translit(atag_parent.find('div', class_='news-card__data').text, 'ru')
             except AttributeError:
                 news_date = '9 сентября 1999'
                 print("Attribute Error! News date was dropped!")
@@ -52,12 +47,12 @@ def date_int(newstitle):
         dig0-год, dig1-месяц1, dig2-месяц2
     """
     dig = [int(s) for s in newstitle.split() if s.isdigit()]
-    for string in monthe:
+    for string in MONTHE:
         regex = re.compile(string)
         match = re.search(regex, newstitle)
         if match:
             mesyac = newstitle[match.start():match.end()]
-            monthnum = '{:02}'.format(monthe.index(mesyac) + 1)
+            monthnum = '{:02}'.format(MONTHE.index(mesyac) + 1)
             dig.append(int(monthnum))
     return dig
 
@@ -65,7 +60,6 @@ def date_int(newstitle):
 def doc2docx(basedir):
     """ Преобразуем файл DOC в DOCX
     """
-    word = win32com.client.Dispatch("Word.application")
     for dir_path, dirs, files in os.walk(basedir):
         for file_name in files:
             file_path = os.path.join(dir_path, file_name)
@@ -74,24 +68,26 @@ def doc2docx(basedir):
                 docx_file = '{0}{1}'.format(file_path, 'x')
                 # Skip conversion where docx file already exists
                 if not os.path.isfile(docx_file):
-                    print(f'Преобразование в docx\n{file_path}\n')
+                    print('Преобразование в docx\n{0}\n'.format(file_path))
                     try:
-                        word_doc = word.Documents.Open(file_path, False, False, False)
-                        # Замена слеша в пути с / на \\, т.к. doc.SaveAs не отрабатывает /
-                        docxf = re.sub('/', '\\\\', docx_file)
-                        word_doc.SaveAs2(docxf, FileFormat=16)
-                        word_doc.Close()
+                        os.chdir(basedir)
+                        if os.name.lower() == 'nt':
+                            subprocess.call(['C:/Program Files/LibreOffice/program/soffice.exe',
+                                             '--convert-to', 'docx', file_path])
+                        else:
+                            subprocess.call(['lowriter', '--convert-to', 'docx', file_path])
                     except Exception:
-                        print(f'Failed to Convert: {file_path}')
+                        print('Failed to Convert: {0}'.format(file_path))
+                        print('Check if exist LibreOffice in your operating system!')
 
 
 def table_doc(doc):
-    data = [[],[]]
+    data = [[], []]
     for t in range(2):  # ранее использовали len(doc.tables), отказался, т.к. в подписи могут добавить еще таблицу
         table = doc.tables[t]
         table_columns = len(table.columns)
         # В январе 2021г. 3 столбца
-        if t == 0 and table_columns != 4: # за январь видно 3 столбца, по факту 4 (объединены)
+        if t == 0 and table_columns != 4:  # за январь видно 3 столбца, по факту 4 (объединены)
             print(f'Внимание! Изменилась структура таблицы, проверьте скачанный файл.')
             print(f'Количество столбцов в таблице t[{t}] = {table_columns}.')
             os.system("pause")
@@ -115,7 +111,7 @@ def floating(start, t):
     :param t: таблица в виде списка
     """
     for row in range(start, len(t)):
-        for col in range(1, len(t[1])): # обработка со второго столбца
+        for col in range(1, len(t[1])):  # обработка со второго столбца
             if t[row][col][:3] == '...':
                 t[row][col] = '0,0'
             t[row][col] = float(re.sub('[^0-9,]', "", t[row][col]).replace(",", "."))
@@ -233,14 +229,12 @@ def create_file(news, header, year):
 
 @transaction.atomic
 def populate():
-    head = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
-            AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 \
-            Safari/537.36'}
-    page = last_added_news(head)
+    print("-----------------------INDUSTRY BEGIN--------------------------")
+    page = last_added_news(HEADER)
     while page > 0:
         print(f'industry.populate page={page}')
         url = 'https://arhangelskstat.gks.ru/news?page=' + str(page)
-        stat = NewsLocate(url, head, 'О промышленном производстве')
+        stat = NewsLocate(url, HEADER, 'О промышленном производстве')
         # Если на текущей странице новость не найдена, то переходим к следующей
         if not stat.atag:
             page -= 1
@@ -251,7 +245,7 @@ def populate():
         title_date = date_int(a_title)
 
         # Заходим в новость, сохраняем файл (запоминаем файл docx и путь к нему)
-        docxfile, pwd = create_file(stat, head, str(title_date[0]))
+        docxfile, pwd = create_file(stat, HEADER, str(title_date[0]))
 
         # Добавляем в БД, определяем id новости
         news_id = add_news(a_title, b_href, c_date)
@@ -269,8 +263,4 @@ def populate():
 
         page -= 1
         print('--------------------------------------------------------')
-
-#
-# if __name__ == "__main__":
-#     populate()
-
+    print("-----------------------INDUSTRY END--------------------------")

@@ -1,16 +1,14 @@
+import dateparser
 import os
 import re
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.util import Pt
-from pptx.enum.text import PP_ALIGN
-import dateparser
-
+from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
 from django.conf import settings
-
 MEDIA = settings.MEDIA_DIR
-MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля',
-          'августа', 'сентября', 'октября', 'ноября', 'декабря']
+# MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля',
+#           'августа', 'сентября', 'октября', 'ноября', 'декабря']
 
 def cut_date(txt):
     """
@@ -19,7 +17,7 @@ def cut_date(txt):
          по Ненецкому автономному округу на 13 января 2020 года"
     получим "13 января 2020". Ф-я возвращает эту строку в формате дата.
     """
-    regex = re.compile('\d{1,2}\s[яфмаисонд][а-я]+[а|я]\s\d{4}')
+    regex = re.compile(r'\d{1,2}\s[яфмаисонд][а-я]+[а|я]\s\d{4}')
     return dateparser.parse(re.search(regex, txt).group())
 
 
@@ -69,7 +67,7 @@ def new_pptx(news_title, current_price_list, previous_price_list, previous_pub_d
         - prom0-7: замена соответствующих показателей
     """
     prs = Presentation(os.path.join(MEDIA, 'price', 'sample', 'Stat_price.pptx'))
-    regex = re.compile('\d{1,2}\s[яфмаисонд][а-я]+[а|я]\s\d{4}')
+    regex = re.compile(r'\d{1,2}\s[яфмаисонд][а-я]+[а|я]\s\d{4}')
     news_date_text = re.search(regex, news_title).group()
     news_date = dateparser.parse(news_date_text)
     date4filename = f"{news_date.year}-{str(news_date.month).zfill(2)}-{str(news_date.day).zfill(2)}"
@@ -85,7 +83,7 @@ def new_pptx(news_title, current_price_list, previous_price_list, previous_pub_d
             # Замена даты в нижней сноске
             if shape.name == 'snoskadate':
                 text_frame = shape.text_frame
-                shape_upd(text_frame, previous_pub_date, 10, 0)
+                shape_upd(text_frame, previous_pub_date, 10)
 
             if shape.name == 'table0':
                 pptx_table(shape.table, current_price_list, previous_price_list, 0, 14)
@@ -95,7 +93,7 @@ def new_pptx(news_title, current_price_list, previous_price_list, previous_pub_d
                 pptx_table(shape.table, current_price_list, previous_price_list, 17, 25)
 
     stat_filename = f'Stat_price_{date4filename}.pptx'
-    path_year = os.path.join(MEDIA, 'price',f'{news_date.year}')
+    path_year = os.path.join(MEDIA, 'price', f'{news_date.year}')
     if os.path.exists(path_year):
         prs_full_path = os.path.join(path_year, stat_filename)
     else:

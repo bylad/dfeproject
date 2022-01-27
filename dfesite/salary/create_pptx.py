@@ -4,16 +4,10 @@ from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.util import Pt
 
+from dfesite.constants import MONTHS
 from django.conf import settings
-# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dfesite.settings')
-# import django
-# django.setup()
-
 
 MEDIA = settings.MEDIA_DIR
-MONTHS = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль',
-          'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь']
-
 
 def shape_upd(txt_frame, text, fontsize, bold=1):
     txt_frame.clear()
@@ -40,7 +34,7 @@ def shape_list(shape, current_list, previous_list):
             if (shape.name.find(f'nao{j}')) != -1:
                 text_frame = shape.text_frame
                 if current_list[j] != 0:
-                    text_frame.paragraphs[0].runs[0].text = re.sub('\.', ',', str(current_list[j]))
+                    text_frame.paragraphs[0].runs[0].text = re.sub(r'\.', ',', str(current_list[j]))
                 else:
                     text_frame.paragraphs[0].runs[0].text = "...*"
             if (shape.name.find(f'strelka{j}')) != -1:
@@ -61,10 +55,10 @@ def new_pptx(title_date, cur_list, prev_list):
     """
     prs = Presentation(os.path.join(MEDIA, 'salary', 'sample', 'Stat_salary.pptx'))
     date4filename = f"{title_date.year}_01-{str(title_date.month).zfill(2)}"
-    regex = re.compile('[яфмаисонд][а-я]+[ьтй]\s*[-]\s*[яфмаисонд][а-я]+[ьтй]\s+\d{4}\s+года?')
+    regex = re.compile(r'[яфмаисонд][а-я]+[ьтй]\s*[-]\s*[яфмаисонд][а-я]+[ьтй]\s+\d{4}\s+года?')
     if title_date.month == 1:  # за январь 2020 года
         news_date_text = f"{MONTHS[0]} {title_date.year} года"
-    elif title_date.month ==12:  # за 2020 год
+    elif title_date.month == 12:  # за 2020 год
         news_date_text = f"{title_date.year} год"
     else:
         news_date_text = f"январь-{MONTHS[title_date.month-1]} {title_date.year} года"
@@ -81,9 +75,9 @@ def new_pptx(title_date, cur_list, prev_list):
             if sh.name == 'snoskayear':
                 text_frame = sh.text_frame
                 cur_text = sh.text
-                snoska_year = int(re.search('\d{4}', cur_text).group())
+                snoska_year = int(re.search(r'\d{4}', cur_text).group())
                 if (title_date.year - 1) != snoska_year:
-                    c_text = re.sub('\d{4}', str(title_date.year - 1), cur_text)
+                    c_text = re.sub(r'\d{4}', str(title_date.year - 1), cur_text)
                     shape_upd(text_frame, c_text, 14, 0)
 
             shape_list(sh, cur_list, prev_list)

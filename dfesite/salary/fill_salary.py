@@ -7,14 +7,12 @@ import pandas as pd
 import numpy as np
 from bs4 import BeautifulSoup
 
-# from django.db import transaction
-from django.conf import settings # correct way for access BASE_DIR, MEDIA_DIR...
-# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dfesite.settings')
-# import django
-# django.setup()
+from django.db import transaction
+from django.conf import settings  # correct way for access BASE_DIR, MEDIA_DIR...
 
 from price.class_webnews import NewsStat, NewsStatDetail
 from price.class_filehandle import WebFile, DocxFile
+from dfesite.constants import HEADER
 from industry import send_msg
 from salary.models import SalaryNews, Salary, SalaryHead
 
@@ -22,10 +20,6 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 MEDIA = settings.MEDIA_DIR
-
-HEADER = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
-          AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 \
-          Safari/537.36'}
 
 
 # Функции добавления в БД
@@ -38,28 +32,28 @@ def add_news(title, news_href, date):
 
 def add_head(ind, current_month_year, period_mm_year, pre_month, pre_year, pre_period, middle):
     SalaryHead.objects.create(salarynews_id=ind,
-                                     current_my=current_month_year,
-                                     period_mmy=period_mm_year,
-                                     pre_month=pre_month,
-                                     pre_year=pre_year,
-                                     pre_period=pre_period,
-                                     middle=middle)
+                              current_my=current_month_year,
+                              period_mmy=period_mm_year,
+                              pre_month=pre_month,
+                              pre_year=pre_year,
+                              pre_period=pre_period,
+                              middle=middle)
     # return current
 
 
 def add_data(ind, employer, current_zp, pre_month, pre_year, period, pre_period, middle):
     Salary.objects.create(salarynews_id=ind,
-                                 employer=employer,
-                                 current=current_zp,
-                                 pre_month=pre_month,
-                                 pre_year=pre_year,
-                                 period=period,
-                                 pre_period=pre_period,
-                                 middle=middle)
+                          employer=employer,
+                          current=current_zp,
+                          pre_month=pre_month,
+                          pre_year=pre_year,
+                          period=period,
+                          pre_period=pre_period,
+                          middle=middle)
     # return current
 
 
-#---Проверка заголовков (сайт, файл)---
+# ---Проверка заголовков (сайт, файл)---
 def check_header(docx_file, news_title):
     """ Ф-я проверки заголовка новости на сайте и в скачанном Word файле
     :return: 0 - не совпадают, 1 - совпадают
@@ -68,7 +62,7 @@ def check_header(docx_file, news_title):
     for p, para in enumerate(docx_file.paragraphs):
         if p < 2:
             docx_header += para.text + ' '
-    docx_header = re.sub('\d\)', '', del_s(docx_header))
+    docx_header = re.sub(r'\d\)', '', del_s(docx_header))
     if docx_header == news_title:
         return 1
     return 0
@@ -80,16 +74,16 @@ def del_s(txt):
         2. Обработка '…', '-', коэффициента
         3. Преобразование текста в вещ.число
     """
-    reg_ex = re.compile('в\s*\d{1,2}[,.]\d{1,2}\s*р')
-    new_txt = re.sub('\s+', ' ', txt).strip()
+    reg_ex = re.compile(r'в\s*\d{1,2}[,.]\d{1,2}\s*р')
+    new_txt = re.sub(r'\s+', ' ', txt).strip()
     if new_txt == '':
         return float('nan')
-    elif re.search('…', new_txt) or re.search('\.\.\.', new_txt):
+    elif re.search(r'…', new_txt) or re.search(r'\.\.\.', new_txt):
         return 0.0123456789
     elif new_txt == '-':
         return 0.0123454321
     elif re.search(reg_ex, new_txt):  # если указано "в 1,6р", вычленяем 1,6
-        koef = re.search('\d{1,2}[,.]\d{1,2}', new_txt).group()
+        koef = re.search(r'\d{1,2}[,.]\d{1,2}', new_txt).group()
         new_txt = 100 * float(re.sub(',', '.', koef))
         return round(new_txt, 1)
 
@@ -107,15 +101,15 @@ def cut_date(txt):
         "...по видам экономической деятельности за январь-сентябрь 2020 года..."
     получим "сентябрь 2020". Ф-я возвращает эту строку в формате дата.
     """
-    regex = re.compile('[яфмаисонд][а-я]+[ьтй]\s+\d{4}')
+    regex = re.compile(r'[яфмаисонд][а-я]+[ьтй]\s+\d{4}')
     try:
         dateparser.parse(re.search(regex, txt).group())
     except AttributeError:  # ...деятельности за 2018... преобразуется в (2018, 12, ...)
-        regex = re.compile('\d{4}')
+        regex = re.compile(r'\d{4}')
     return dateparser.parse(re.search(regex, txt).group())
 
 
-#----------------------------------------------------
+# ----------------------------------------------------
 # Функции создания pandas dataframe из таблицы html
 def pre_process_table(table):
     """
@@ -131,10 +125,10 @@ def pre_process_table(table):
     num_rows = len(rows)
 
     # get an initial column count. Most often, this will be accurate
-    num_cols = max([len(x.findAll(['th','td'])) for x in rows])
+    num_cols = max([len(x.findAll(['th', 'td'])) for x in rows])
 
     # sometimes, the tables also contain multi-colspan headers. This accounts for that:
-    header_rows_set = [x.findAll(['th', 'td']) for x in rows if len(x.findAll(['th', 'td']))>num_cols/2]
+    header_rows_set = [x.findAll(['th', 'td']) for x in rows if len(x.findAll(['th', 'td'])) > num_cols/2]
 
     num_cols_set = []
 
@@ -142,7 +136,7 @@ def pre_process_table(table):
         num_cols = 0
         for cell in header_rows:
             row_span, col_span = get_spans(cell)
-            num_cols+=len([cell.getText()]*col_span)
+            num_cols += len([cell.getText()]*col_span)
 
         num_cols_set.append(num_cols)
 
@@ -152,20 +146,20 @@ def pre_process_table(table):
 
 
 def get_spans(cell):
-        """
-        INPUT:  1. cell - a <td>...</td> or <th>...</th> element that contains a table cell entry
-        OUTPUT: 1. a tuple with the cell's row and col spans
-        """
-        if cell.has_attr('rowspan'):
-            rep_row = int(cell.attrs['rowspan'])
-        else: # ~cell.has_attr('rowspan'):
-            rep_row = 1
-        if cell.has_attr('colspan'):
-            rep_col = int(cell.attrs['colspan'])
-        else: # ~cell.has_attr('colspan'):
-            rep_col = 1
+    """
+    INPUT:  1. cell - a <td>...</td> or <th>...</th> element that contains a table cell entry
+    OUTPUT: 1. a tuple with the cell's row and col spans
+    """
+    if cell.has_attr('rowspan'):
+        rep_row = int(cell.attrs['rowspan'])
+    else:  # ~cell.has_attr('rowspan'):
+        rep_row = 1
+    if cell.has_attr('colspan'):
+        rep_col = int(cell.attrs['colspan'])
+    else:  # ~cell.has_attr('colspan'):
+        rep_col = 1
 
-        return rep_row, rep_col
+    return rep_row, rep_col
 
 
 def process_rows(rows, num_rows, num_cols):
@@ -173,17 +167,18 @@ def process_rows(rows, num_rows, num_cols):
     INPUT:  1. rows - a list of table rows ie <tr>...</tr> elements
     OUTPUT: 1. data - a Pandas dataframe with the html data in it
     """
+    col_stat = None
     data = pd.DataFrame(np.ones((num_rows, num_cols))*np.nan)
     for i, row in enumerate(rows):
         try:
-            col_stat = data.iloc[i,:][data.iloc[i,:].isnull()].index[0]
+            col_stat = data.iloc[i, :][data.iloc[i, :].isnull()].index[0]
         except IndexError:
             print(i, row)
 
         for j, cell in enumerate(row.findAll(['td', 'th'])):
             rep_row, rep_col = get_spans(cell)
 
-            #find first non-na col and fill that one
+            # find first non-na col and fill that one
             while any(data.iloc[i, col_stat:col_stat+rep_col].notnull()):
                 col_stat += 1
 
@@ -193,7 +188,7 @@ def process_rows(rows, num_rows, num_cols):
 
     return data
 
-#----------------------------------------------------
+# ----------------------------------------------------
 # Функции создания pandas dataframe из таблицы docx
 def read_docx_table(document):
     table = document.tables[0]
@@ -204,9 +199,9 @@ def read_docx_table(document):
         df = pd.DataFrame(data, columns=[0, 1, 2, 3, 4])
     return df
 
-
-#----------------------------------------------------
+# ----------------------------------------------------
 def db_addhead(news_pk, max_cols, df):
+    hcur_my, hper_mmy = None, None
     if max_cols > 5:
         for row, col in df.iterrows():
             if row == 0:
@@ -309,7 +304,7 @@ def from_htmldocx(path):
             for p, para in enumerate(doc.paragraphs):
                 if p < 2:
                     docx_header += para.text + ' '
-            title = re.sub('\d\)', '', del_s(docx_header))
+            title = re.sub(r'\d\)', '', del_s(docx_header))
             pub_date = (cut_date(title).replace(day=1) + timedelta(days=32)).replace(day=1)
             dataframe = read_docx_table(doc)
             news_id = add_news(title, '', pub_date)
@@ -318,12 +313,12 @@ def from_htmldocx(path):
             db_adddocx(news_id, len(dataframe.columns), dataframe)
 
 
-#----------------------------------------------------
+# ----------------------------------------------------
 # Добавление данных из файлов htlm (2018 - 2019_07), docx (2019_07 - 2020_07)
 # files_dir = "d:/code/python/django/dfeproject/dfesite/media/salary/_source"
 # from_htmldocx(files_dir)
 # print('Процедура завершена')
-#----------------------------------------------------
+# ----------------------------------------------------
 
 # Добавление данных с сайта. Поиск последней добавленной новости
 def last_added_news(news_text):
@@ -373,6 +368,7 @@ def search_news(page, news_text):
     return news
 
 
+@transaction.atomic
 def populate():
     news_find = 'реднемесячная номинальная начисленная заработная плата работников организаций'
     page_num = last_added_news(news_find)

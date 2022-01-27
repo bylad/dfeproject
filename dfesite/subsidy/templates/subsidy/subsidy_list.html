@@ -2,16 +2,18 @@
 {% load static %}
 {% block body_block %}
 <div class="jumbotron bg-cover"
-     style="background-image: url(/static/images/stat_population.jpg)">
-    <h2>Демография и миграция населения
-        <br>Ненецкого автономного округа</h2>
+     style="background-image: url(/static/images/stat_subsidy.jpg)">
+    <h2>Предоставление гражданам субсидий и льгот
+        <br>по оплате жилого помещения и коммунальных услуг
+        <br>по Ненецкому автономному округу</h2>
 </div>
 <div class="container">
     <div id="table1" class="container-fluid">
     <h3>Статистические данные</h3>
-    {% for migr in population_list %}
-       <a href="{{ migr.id }}" class="list-group-item list-group-item-action ">{{ migr.migration_title }}</a>
+    {% for news in newshead_list %}
+       <a href="{{ news.id }}" class="list-group-item list-group-item-action ">{{ news.news_title }}</a>
     {% endfor %}
+        <p>
         <nav aria-label="Page navigation example">
             <ul class="pagination">
             {% if page_obj.has_previous %}
@@ -29,6 +31,11 @@
             {% endif %}
             </ul>
         </nav>
+        </p>
+    </div>
+
+    <table class="table table-bordered">
+    </table>
     </div>
 </div>
 {% endblock%}

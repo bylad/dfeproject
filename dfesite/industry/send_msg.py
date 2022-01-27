@@ -1,11 +1,9 @@
-# from django.core.mail import send_mail
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import smtplib
 import socket
 import requests
-from jinja2 import Environment, PackageLoader
-import os
+
 
 HTTP_LINK = 'http://127.0.0.1:8000'
 

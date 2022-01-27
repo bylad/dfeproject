@@ -5,27 +5,21 @@ import xlrd
 import docx
 import openpyxl
 import dateparser
-from datetime import timedelta
+import urllib3
 
+from datetime import timedelta
 from django.db import transaction
 from django.conf import settings  # correct way for access BASE_DIR, MEDIA_DIR...
 
 from .class_webnews import NewsStat, NewsStatDetail
 from .class_filehandle import WebFile, DocxFile
 from .models import PriceNews, PriceData, PricePetrolHead, PricePetrolData
+from dfesite.constants import HEADER, MONTHS
 from industry import send_msg
 
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 MEDIA = settings.MEDIA_DIR
-
-MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля',
-          'августа', 'сентября', 'октября', 'ноября', 'декабря']
-
-HEADER = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
-          AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 \
-          Safari/537.36'}
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 SEARCH_TXT1 = 'Ненецкий автономный округ'
 SEARCH_TXT2 = 'Нарьян-Мар'
@@ -62,7 +56,7 @@ def cut_date(txt):
          по Ненецкому автономному округу на 13 января 2020 года"
     получим "13 января 2020". Ф-я возвращает эту строку в формате дата.
     """
-    regex = re.compile('\d{1,2}\s[яфмаисонд][а-я]+[а|я]\s\d{4}')
+    regex = re.compile(r'\d{1,2}\s[яфмаисонд][а-я]+[а|я]\s\d{4}')
     return dateparser.parse(re.search(regex, txt).group())
 
 
@@ -86,11 +80,7 @@ def data_docx(doc):
             pet_price[j] = float(re.sub(',', '.', doc.tables[0].cell(i, 1).text))
             j += 1
     pet_head = doc.tables[0].cell(0, 0).text.replace(CUT_NM, '')
-    print(pet_head)
-    # print(pet_name)
-    # print(pet_price)
     print('Обработка таблицы DOCX файла успешно завершена.\n')
-    # sys.exit()
     return pet_head, pet_name, pet_price
 
 
@@ -102,7 +92,7 @@ def data_xls(xls):  # предыдущая версия data_xls(xls, search_txt
     ws = wb.sheet_by_index(0)
 
     # удаляем из заголовка все лишние пробелы, символы новой строки и подстроку CUT_NM
-    xls_title = re.sub('\s+', ' ', ws.cell_value(0, 0)).replace(CUT_NM, '')
+    xls_title = re.sub(r'\s+', ' ', ws.cell_value(0, 0)).replace(CUT_NM, '')
     for i in range(ws.nrows):
         if re.search(SEARCH_TXT1, ws.cell_value(i, 0)):
             data_begin = i
@@ -112,7 +102,6 @@ def data_xls(xls):  # предыдущая версия data_xls(xls, search_txt
         print(f'Ошибка!\nНе найден заголовок, содержащий слова "{SEARCH_TXT1}". Проверьте файл!\nПрограмма завершена.')
         sys.exit()
 
-    # rows_count = ws.nrows - data_i
     rows_count = data_end - (data_begin + 1)  # начало: data_begin+1
     col_name = [''] * rows_count
     col_price = [0.0] * rows_count
@@ -123,10 +112,6 @@ def data_xls(xls):  # предыдущая версия data_xls(xls, search_txt
         j += 1
 
     print('Обработка Excel файла успешно завершена.\n')
-    # print(f'Заголовок:\n{xls_title}\n')
-    # print(f'{col_name}\n')
-    # print(f'{col_price}\n')
-    # sys.exit()
     return xls_title, col_name, col_price
 # --------------------------------
 
@@ -137,7 +122,7 @@ def data_openpyxl(xlsx, search_txt):
     regex = re.compile(search_txt)
     wb = openpyxl.load_workbook(xlsx)
     ws = wb.worksheets[0]
-    xls_title = re.sub('\s+', ' ', ws.cell(row=1, column=1).value)  # удаляем все лишние пробелы, символы новой строки
+    xls_title = re.sub(r'\s+', ' ', ws.cell(row=1, column=1).value)  # удаляем все лишние пробелы, символы новой строки
     for i in range(1, ws.max_row):
         if re.search(regex, ws.cell(row=i, column=1).value):
             data_i = i
@@ -232,12 +217,13 @@ def mid_news(news_num, page):
     Возвращает количество найденных новостей на странице
     0-количество новостей, 1-заголовок, 2-ссылка, 3-дата, 4-файл (либо путь к xl, либо объект docx)
     """
-    newsdata = search_news(news_num, page, 'потребительские')
+    news_id = None
+    newsdata = search_news(news_num, page, 'Средние цены и их изменение на отдельные потребительские товары')
     all_news = PriceNews.objects.all().order_by('-pub_date')
     for news in all_news:  # добавлена проверка, т.к. на сайте статистики м.б. ошибочная дата в заголовке
         if news.title == newsdata[1] and news.pub_date != newsdata[3]:
             previous_news = news.get_previous_by_pub_date()
-            pattern = re.compile('\d{1,2}\s[яфмаисонд][а-я]+[а|я]\s\d{4}')
+            pattern = re.compile(r'\d{1,2}\s[яфмаисонд][а-я]+[а|я]\s\d{4}')
             previous_news_title_date = dateparser.parse(re.search(pattern, previous_news.title).group())
             # т.к. данные обновляются еженедельно, то к предыдущей дате добавляем 7 дней
             newsdate = previous_news_title_date + timedelta(days=7)
@@ -292,12 +278,11 @@ def from_web(page):
     pet_num = 0
     pet_count = 1
     data_in_db = 0
+    midnews_id = None
 
     while mid_num < mid_count:
-        print('mid_news RUNNING...')
+        print(f'mid_news RUNNING...')
         mid_count, data_in_db, midnews_id = mid_news(mid_num, page)
-        # if data_in_db == 1:  # при
-        #     return data_in_db
         mid_num += 1
 
     while pet_num < pet_count:
@@ -306,132 +291,11 @@ def from_web(page):
         pet_num += 1
     return data_in_db, midnews_id
 
-# --------------------------------
-# 2020. Загрузка данных из ранее скачанных файлов
-def from_xlsdocx(path):
-    for filename in os.listdir(path):
-        # print(os.path.join(path, filename))
-        if filename.endswith(".xls") or filename.endswith(".xlsx"):
-            xl_title, products, prices = data_xls(os.path.join(path, filename))
-            xl_date = cut_date(xl_title)
-            data_in = check_db(xl_date, 0)
-            if data_in == 0:
-                news_id = add_news(xl_title, '', xl_date)
-                for p in range(len(products)):  # кол-во строк с ценами на товары
-                    add_data(news_id, products[p], prices[p])
-        elif filename.endswith(".docx"):
-            doc_title, products, prices = data_docx(docx.Document(os.path.join(path, filename)))
-            doc_date = cut_date(doc_title)
-            data_in = check_db(doc_date, 1)
-            if data_in == 0:
-                news_id = add_pethead(doc_title, '', doc_date)
-                for p in range(len(products)):  # кол-во строк с ценами на товары
-                    add_petdata(news_id, products[p], prices[p])
-        else:
-            continue
-#----------------------------------------------------
-# 2019-2018. Загрузка данных из ранее скачанных файлов
-def data_xlsm(xls, product_column):
-    """
-    Обработка старых XLSM файлов
-    :param xls: полный путь к файлу Excel
-    :param product_column: колонка 0(A) - бензин, колонка 4(E) - товар
-    :return: заголовок, товар, цена
-    """
-    j = 0
-    i_begin = 0
-    i_end = 0
-    regex_nao = re.compile('в том числе Ненецкий')
-    regex_arh = re.compile('без Ненецкого')
-    regex_milk = re.compile('Молоко питьевое')
-    wb = xlrd.open_workbook(xls)
-    ws = wb.sheet_by_index(0)
-
-    if product_column:
-        title = re.sub('\s+', ' ', ws.cell_value(0, 4)) + ' ' + re.sub('\s+', ' ', ws.cell_value(1, 4))
-    else:
-        title = re.sub('\s+', ' ', ws.cell_value(0, 0)) + ' ' + re.sub('\s+', ' ', ws.cell_value(1, 0))[:-2]
-
-    for i in range(ws.nrows):
-        if re.search(regex_nao, ws.cell_value(i, product_column)):
-            i_begin = i
-        if re.search(regex_arh, ws.cell_value(i, product_column)):
-            i_end = i
-            break
-    if not i_begin:
-        print('Ошибка структуры файла!\nПрограмма завершена.')
-        sys.exit()
-
-    rows_count = i_end - i_begin - 1
-    col_name = [''] * rows_count
-    col_price = [0.0] * rows_count
-    for i in range(i_begin+1, i_end):
-        if re.search(regex_milk, ws.cell_value(i, product_column)):
-            col_name[j] = f"{ws.cell_value(i, product_column)} {ws.cell_value(i + 1, product_column)}"
-            try:
-                col_price[j] = float(re.sub(r',', '.', ws.cell_value(i, product_column+1)))
-            except TypeError:
-                col_price[j] = ws.cell_value(i, product_column+1)
-            j += 1
-            continue
-        elif ws.cell_value(i, product_column) != '' and ws.cell_value(i, product_column+1) != '':
-            col_name[j] = ws.cell_value(i, product_column)
-            try:
-                col_price[j] = float(re.sub(r',', '.', ws.cell_value(i, product_column+1)))
-            except TypeError:
-                col_price[j] = ws.cell_value(i, product_column+1)
-            j += 1
-            continue
-        elif ws.cell_value(i, product_column) != '' and ws.cell_value(i, product_column+1) == '' \
-                and product_column == 0:
-            col_name[j] = ws.cell_value(i, product_column)
-            try:
-                col_price[j] = float(re.sub(r',', '.', ws.cell_value(i+1, product_column+1)))
-            except TypeError:
-                col_price[j] = ws.cell_value(i+1, product_column+1)
-            j += 1
-            continue
-    excess = rows_count - j  # излишне созданные данные в списке
-    print('Обработка Excel файла успешно завершена.\n')
-    return title.strip(), col_name[:-excess], col_price[:-excess]
-
-
-def from_xlsm(path):
-    column_list = [0, 4]
-    for filename in os.listdir(path):
-        if filename.endswith(".xlsm"):
-            for column in column_list:
-                xl_title, products, prices = data_xlsm(os.path.join(path, filename), column)
-                xl_date = cut_date(xl_title)
-                if column:  # колонка не равна 0, т.е. не бензин
-                    data_in = check_db(xl_date, 0)
-                    if data_in == 0:
-                        news_id = add_news(xl_title, '', xl_date)
-                        for p in range(len(products)):  # кол-во строк с ценами на товары
-                            add_data(news_id, products[p], prices[p])
-                else:  # добавляем в базу данные по бензину
-                    data_in = check_db(xl_date, 1)
-                    if data_in == 0:
-                        news_id = add_pethead(xl_title, '', xl_date)
-                        for p in range(len(products)):  # кол-во строк с ценами на товары
-                            add_petdata(news_id, products[p], prices[p])
-#----------------------------------------------------
-# Добавление данных из файлов xls, docx (2020)
-# files_dir = "d:/code/python/study/djangoproject/dfesite/media/price/__source/2020"
-# from_xlsdocx(files_dir)
-
-#----------------------------------------------------
-# Добавление данных из файлов xlsm (2019)
-# files_dir = "d:/code/python/study/djangoproject/dfesite/media/price/__source/2019"
-# from_xlsm(files_dir)
-
-#----------------------------------------------------
-# Добавление данных с сайта
 
 @transaction.atomic
 def populate():
     page_num = 1
-    print('============== price.populate ===============')
+    print("-----------------------PRICE BEGIN--------------------------")
     while page_num < 5:
         print(f'page={page_num}')
         try:
@@ -446,7 +310,4 @@ def populate():
                 send_msg.sending('price', current_news.id, current_news.title)
         except Exception as e:
             print(e)
-    print('Процедура выполнена')
-
-# if __name__ == "__main__":
-#     populate()
+    print("-----------------------PRICE END--------------------------")

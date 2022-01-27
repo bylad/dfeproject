@@ -100,7 +100,7 @@ def populate():
         fill_daily(db_day, usd)
 
     db_last_date = Monthly.objects.last().date
-    print(f"db_last_date={db_last_date}, {yemo(db_last_date)}")
+    print(f"db_last_date monthly={db_last_date}, {yemo(db_last_date)}")
     print(f"today={today}, {yemo(today)}")
 
     # Заполнение ежедневного курса $
