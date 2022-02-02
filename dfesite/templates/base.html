@@ -41,7 +41,6 @@
                 </ul>
                 <ul class="navbar-nav navbar-right" id="right-side">
                     {% if user.is_authenticated %}
-                    <li><a class="nav-link" href="{% url 'blog:posts' %}">Blog</a></li>
                     <li><a class="nav-link" href="{% url 'logout' %}?next={{ request.path }}">Log Out</a></li>
                     <li class="nav-link">Welcome: {{ user.username }}</li>
                     {% else %}

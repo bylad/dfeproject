@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     'rate',
     'salary',
     'subsidy',
-    'blog.apps.BlogConfig',
+    # 'blog.apps.BlogConfig',
 ]
 
 MIDDLEWARE = [
