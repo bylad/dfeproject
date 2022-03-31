@@ -87,19 +87,21 @@ def table_doc(doc):
         table = doc.tables[t]
         table_columns = len(table.columns)
         # В январе 2021г. 3 столбца
-        if t == 0 and table_columns != 4:  # за январь видно 3 столбца, по факту 4 (объединены)
+        if t == 0:
+            if table_columns != 4 or table_columns != 3:  # за январь видно 3 столбца, по факту 4 (объединены)
+                print(f'Внимание! Изменилась структура таблицы, проверьте скачанный файл.')
+                print(f'Количество столбцов в таблице t[{t}] = {table_columns}.')
+                # os.system("pause")
+        elif t == 1 and table_columns != 3:
             print(f'Внимание! Изменилась структура таблицы, проверьте скачанный файл.')
             print(f'Количество столбцов в таблице t[{t}] = {table_columns}.')
-            os.system("pause")
-        if t == 1 and table_columns != 3:
-            print(f'Внимание! Изменилась структура таблицы, проверьте скачанный файл.')
-            print(f'Количество столбцов в таблице t[{t}] = {table_columns}.')
-            os.system("pause")
+            # os.system("pause")
 
         for i, row in enumerate(table.rows):
             text = (cell.text for cell in row.cells)
             row_data = list(text)
             data[t].append(row_data)
+    print(len(data))
     return data[0], data[1]
 
 
@@ -112,7 +114,7 @@ def floating(start, t):
     """
     for row in range(start, len(t)):
         for col in range(1, len(t[1])):  # обработка со второго столбца
-            if t[row][col][:3] == '...':
+            if t[row][col][:3] == '...' or t[row][col].strip() == '-' or t[row][col].strip() == '':
                 t[row][col] = '0,0'
             t[row][col] = float(re.sub('[^0-9,]', "", t[row][col]).replace(",", "."))
     return t
@@ -219,6 +221,8 @@ def create_file(news, header, year):
             f.write(news_item.file_href.content)
 
     # Перевод doc файла в docx
+    print(f"{f_path}")
+    print(f"{dir_path}")
     if not os.path.exists(f"{f_path}x"):
         doc2docx(dir_path)
 
@@ -230,6 +234,16 @@ def create_file(news, header, year):
 @transaction.atomic
 def populate():
     print("-----------------------INDUSTRY BEGIN--------------------------")
+    # file_path = "d:/code/python/django/dfeproject/dfesite/media/industry/2022/ОСП01_НАО.docx"
+    # docx_file = docx.Document(file_path)
+    # da, db = table_doc(docx_file)
+    # tfa = floating(2, da)
+    # tfb = floating(1, db)
+    #
+    # print(tfa)
+    # print('=---------------------------------------------=')
+    # print(tfb)
+
     page = last_added_news(HEADER)
     while page > 0:
         print(f'industry.populate page={page}')
