@@ -14,9 +14,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 import debug_toolbar
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
-# from django.conf.urls.static import static
+from django.conf.urls.static import static
 from industry import views
 from django.contrib.auth import views as auth_views
 
@@ -32,6 +33,6 @@ urlpatterns = [
     path('rate/', include('rate.urls', namespace='rate')),
     path('population/', include('population.urls', namespace='population')),
     path('subsidy/', include('subsidy.urls', namespace='subsidy')),
-    # path('blog/', include('blog.urls', namespace='blog')),
+    path('docs/', include('docs.urls', namespace='docs')),
     path('__debug__/', include(debug_toolbar.urls)),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

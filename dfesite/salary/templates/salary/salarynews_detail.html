@@ -10,14 +10,14 @@
 <!--    #table2{padding-top:50px;height:50%;color: #000;}-->
 <!--</style>-->
 
-<div class="jumbotron bg-cover"
+<div class="py-3"
      style="background-image: linear-gradient(to bottom, rgba(255,255,255,0.6) 0%,rgba(255,255,255,0.9) 100%),
                               url(https://placeimg.com/1500/480/tech)">
-    <h3>{{ salarynews_detail.title|slice:":114" }}<small><sup>1)</sup></small> {{ salarynews_detail.title|slice:"115:" }}</h3>
+    <h3 class="container">{{ salarynews_detail.title|slice:":114" }}<small><sup>1)</sup></small> {{ salarynews_detail.title|slice:"115:" }}</h3>
 </div>
 <div class="container">
     {% if user.is_authenticated %}
-    <form class="d-flex justify-content-center" action="{% url 'salary:success' %}" method="POST">
+    <form class="d-flex justify-content-center mt-2" action="{% url 'salary:success' %}" method="POST">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="hidden" name="news_pk" value="{{ salarynews_detail.pk }}">

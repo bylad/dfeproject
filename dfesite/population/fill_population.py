@@ -53,7 +53,9 @@ def search_webdata(idx, search_text):
     webpage = 'https://arhangelskstat.gks.ru/population111'
     # 0-количество, 1-заголовок, 2-ссылка, 3-дата, 4-файл (docx)
     population_info = []
+    print(f"\n\nsearch_webdata: idx={idx}, search_text={search_text}, webpage={webpage}, HEADER={HEADER}\n\n")
     stat = PopulationStat(idx, search_text, webpage, HEADER)
+    print(f"\n\nsearch_webdata.stat={stat}")
     if stat.div_count:
         stat_href = stat.www + stat.get_href()
         stat_title = stat.get_title()
@@ -116,8 +118,10 @@ def putto_db(srch_txt):
         else:
             print('Exception:', e)
 
+    print(f"putto_db.db_migrhead={db_migrhead}")
     info = search_webdata(0, srch_txt)  # находим количество искомого
     # [news_count, title, href, pub_date, file]
+    print(f"info={info}")
     if info:
         if db_migrhead.last().migration_title == info[1]:  # сравнение последней новости из БД с новостью с сайта
             return None
@@ -144,9 +148,11 @@ def populate():
     print("-----------------------POPULATION BEGIN--------------------------")
     for look in srch_list:
         migrtitle_id = putto_db(look)
+        print(f"populate.migrtitle_id = {migrtitle_id}")
         if migrtitle_id:
             current = MigrationHead.objects.get(id=migrtitle_id)
             print(f'current_migr.id={current.id}')
             send_msg.sending('population', current.id, current.migration_title)
     print("-----------------------POPULATION END--------------------------")
+
 

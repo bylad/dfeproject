@@ -1,0 +1,54 @@
+/*
+h1{
+    padding-bottom: 20px;
+}
+
+h3{
+    padding-bottom: 10px;
+}
+
+
+.carousel-control-next-icon{
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%6c757d' viewBox='0 0 8 8'%3E%3Cpath d='M2.75 0l-1.5 1.5 2.5 2.5-2.5 2.5 1.5 1.5 4-4-4-4z'/%3E%3C/svg%3E");
+}
+
+.carousel-control-prev-icon{
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%6c757d' viewBox='0 0 8 8'%3E%3Cpath d='M5.25 0l-4 4 4 4 1.5-1.5-2.5-2.5 2.5-2.5-1.5-1.5z'/%3E%3C/svg%3E");
+}
+*/
+
+small {
+  font-size: smaller;
+}
+
+div.scrollup {
+  position: fixed; /* фиксированная позиция */
+  color: #fff; /* цвет текста */
+  background-color: #286090; /* цвет заднего фона */
+  right: 20px; /* расстояние от правого края */
+  bottom: 0px; /* расстояние от нижнего края */
+  padding: 4px 10px; /* отступы до содержимого блока */
+  font-size: 20px; /* размер шрифта (иконки) */
+  border-top-left-radius: 4px; /* скругление верхнего левого угла */
+  border-top-right-radius: 4px; /* скругление верхнего правого угла */
+  cursor: pointer; /* форма курсора */
+  display: none; /* не отображать элемент */
+  text-align: center; /*выравнивание содержимого элемента по центру */
+}
+
+div.scrollup:hover {
+  background-color: #5bc0de; /* цвет заднего фона при наведении */
+}
+
+.top-buffer{
+    margin-top: 10px;
+    border-bottom: 1px solid #ccc;
+    /*border-top: 1px solid #ccc;*/
+}
+
+.bg-cover {
+    background-attachment: static;
+    background-position: right;
+    background-repeat: no-repeat;
+    background-size: cover;
+}

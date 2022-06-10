@@ -93,9 +93,12 @@ def populate():
     print('============== rate.populate ===============')
     today = datetime.today().date()
     db_day = Daily.objects.first().date
+    print(f"today={today}")
+    print(f"db_day={db_day}")
     # Заполнение ежедневного курса $
     while today > db_day:
         db_day += relativedelta(days=1)
+        print(f'dbday+={db_day}')
         usd = usd_rates(db_day)
         fill_daily(db_day, usd)
 

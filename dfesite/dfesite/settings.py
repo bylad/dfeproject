@@ -51,7 +51,10 @@ INSTALLED_APPS = [
     'rate',
     'salary',
     'subsidy',
-    # 'blog.apps.BlogConfig',
+    'docs',
+    'mptt',
+    'ckeditor',
+    'cyber',
 ]
 
 MIDDLEWARE = [
@@ -149,6 +152,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     STATIC_DIR,
 ]
+STATIC_ROOT = Path(BASE_DIR, 'staticfiles')
 
 # MEDIA
 MEDIA_ROOT = MEDIA_DIR
@@ -157,7 +161,31 @@ MEDIA_URL = '/media/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-SESSION_EXPIRE_SECONDS = 6000  # 100min
-SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
-SESSION_TIMEOUT_REDIRECT = '/'
+# SESSION_EXPIRE_SECONDS = 6000  # 100min
+# SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
+# SESSION_TIMEOUT_REDIRECT = '/'
 
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': [
+            ['Undo', 'Redo',
+             '-', 'Bold', 'Italic', 'Underline',
+             '-', 'Link', 'Unlink', 'Anchor',
+             '-', 'Format',
+             '-', 'Maximize',
+             '-', 'Table',
+             '-', 'Image',
+             '-', 'Source',
+             '-', 'NumberedList', 'BulletedList'],
+            ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock',
+             '-', 'Font', 'FontSize', 'TextColor',
+             '-', 'Outdent', 'Indent',
+             '-', 'HorizontalRule',
+             '-', 'Blockquote']
+        ],
+        'height': 500,
+        'width': '100%',
+        'toolbarCanCollapse': False,
+        'forcePasteAsPlainText': True
+    }
+}

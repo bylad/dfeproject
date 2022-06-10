@@ -1,0 +1,21 @@
+{% extends 'docs_base.html' %}
+{% block title %} Создание новой статьи {% endblock %}
+{% block docs_body %}
+<h1>Создание статьи</h1>
+<br><br>
+<div class="form-group">
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.text|safe }}
+    {{ form.media }}
+    {{ form.as_p }}
+    <button class="btn btn-secondary" data-url="{% url 'docs:posts' %}">Сохранить</button>
+</form>
+</div>
+
+<script>
+    var name = "{{ user.id }}";
+    document.getElementById("finuser").value = name;
+</script>
+
+{% endblock%}

@@ -4,13 +4,28 @@ from django.views.generic import TemplateView, ListView, DetailView
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from . import models
-from . import create_pptx, send_msg
-import requests
+from . import create_pptx
+from population.models import MigrationHead
+from price.models import PriceNews
+from subsidy.models import NewsHead
 
 
 # Create your views here.
 class IndexView(TemplateView):
+    model = models.IndustryNews
     template_name = 'index.html'
+
+    def get_context_data(self, **kwargs):
+        lastnews_industry = self.model.objects.last()
+        lastnews_population = MigrationHead.objects.last()
+        lastnews_price = PriceNews.objects.last()
+        lastnews_subsidy = NewsHead.objects.last()
+        context = {'last_industry': lastnews_industry,
+                   'last_population': lastnews_population,
+                   'last_price': lastnews_price,
+                   'last_subsidy': lastnews_subsidy,
+                   }
+        return context
 
 class IndustryNewsListView(ListView):
     context_object_name = 'news_list'
